@@ -1,23 +1,28 @@
 .about {
   background: var(--bg-secondary);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .about__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  grid-template-columns: 1fr;
+  gap: 2rem;
   align-items: start;
-  margin-bottom: 4rem;
+  margin-bottom: 2.5rem;
+  width: 100%;
 }
 
 .about__content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .about__block {
-  padding: 1.75rem;
+  padding: 1.25rem;
 }
 
 .about__block h3 {
@@ -35,32 +40,33 @@
 
 .about__intro p {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.8;
-  padding: 0 0.5rem;
 }
 
 .about__visual {
-  height: 420px;
-  position: sticky;
-  top: 100px;
+  height: 240px;
+  position: static;
+  order: -1;
+  width: 100%;
+  max-width: 100%;
 }
 
 .about__values-title {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .about__values-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
 }
 
 .value-card {
-  padding: 1.5rem;
+  padding: 1.25rem;
   text-align: center;
 }
 
@@ -83,51 +89,58 @@
   line-height: 1.6;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 481px) {
   .about__values-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .about__grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .about__block {
-    padding: 1.25rem;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .about__visual {
     height: 260px;
-    position: static;
-    order: -1;
-  }
-
-  .about__values-title {
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .about__values-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.875rem;
-  }
-
-  .value-card {
-    padding: 1.25rem;
   }
 }
 
-@media (max-width: 480px) {
-  .about__values-grid {
-    grid-template-columns: 1fr;
+@media (min-width: 769px) {
+  .about__block {
+    padding: 1.75rem;
   }
 
   .about__intro p {
-    padding: 0;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    padding: 0 0.5rem;
+  }
+
+  .about__values-title {
+    font-size: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .value-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 969px) {
+  .about__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .about__visual {
+    height: 420px;
+    position: sticky;
+    top: 100px;
+    order: 0;
+  }
+
+  .about__values-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .about__values-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 }

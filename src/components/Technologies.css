@@ -1,6 +1,14 @@
+.technologies {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 .technologies__slider {
   overflow: hidden;
   margin: 2rem 0 3rem;
+  width: 100%;
+  max-width: 100%;
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 

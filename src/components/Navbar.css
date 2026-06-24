@@ -41,6 +41,12 @@
   object-fit: contain;
   object-position: left center;
   transition: opacity 0.3s ease;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .navbar__logo {
+  /* Blend logo PNG black background with nav */
+  background: #0a0e1a;
 }
 
 .navbar__brand:hover .navbar__logo {
@@ -153,6 +159,7 @@
   }
 
   .navbar__nav {
+    display: none;
     position: fixed;
     inset: 0;
     top: 0;
@@ -161,19 +168,13 @@
     justify-content: center;
     align-items: center;
     gap: 2rem;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.35s ease, visibility 0.35s ease;
     z-index: 1001;
     padding: calc(5rem + env(safe-area-inset-top, 0px)) 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
   }
 
   .navbar__nav--open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+    display: flex;
   }
 
   .navbar__links {
@@ -201,8 +202,8 @@
     display: flex;
   }
 
-  .navbar__cta {
-    display: none;
+  .navbar .navbar__cta.btn {
+    display: none !important;
   }
 }
 

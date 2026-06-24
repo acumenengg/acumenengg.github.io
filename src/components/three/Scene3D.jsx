@@ -1,6 +1,7 @@
-import { Suspense, useRef, useMemo } from 'react';
+import { Suspense, useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Grid, Edges, Float } from '@react-three/drei';
+
 function Building({ position = [0, 0, 0], scale = 1, color = '#4DA6FF' }) {
   const groupRef = useRef();
 
@@ -116,7 +117,7 @@ function RebarGrid({ position = [0, 0, 0] }) {
   );
 }
 
-function SceneContent({ variant = 'building' }) {
+function SceneContent({ variant = 'building', showGrid = true }) {
   return (
     <>
       <ambientLight intensity={0.4} />
@@ -138,36 +139,61 @@ function SceneContent({ variant = 'building' }) {
         </>
       )}
 
-      <Grid
-        position={[0, -0.5, 0]}
-        args={[10, 10]}
-        cellSize={0.5}
-        cellThickness={0.5}
-        cellColor="#1e293b"
-        sectionSize={2}
-        sectionThickness={1}
-        sectionColor="#FF8C00"
-        fadeDistance={12}
-        fadeStrength={1}
-        infiniteGrid
-      />
+      {showGrid && (
+        <Grid
+          position={[0, -0.5, 0]}
+          args={[10, 10]}
+          cellSize={0.5}
+          cellThickness={0.5}
+          cellColor="#1e293b"
+          sectionSize={2}
+          sectionThickness={1}
+          sectionColor="#FF8C00"
+          fadeDistance={12}
+          fadeStrength={1}
+          infiniteGrid
+        />
+      )}
     </>
   );
 }
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < breakpoint
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 export default function Scene3D({ variant = 'building', className = '', autoRotate = true }) {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = useIsMobile();
 
   return (
     <div className={`scene-3d ${className}`}>
       <Canvas
         camera={{ position: [4, 3, 5], fov: isMobile ? 50 : 45 }}
-        dpr={isMobile ? [1, 1.25] : [1, 1.5]}
-        gl={{ antialias: !isMobile, alpha: true, powerPreference: isMobile ? 'low-power' : 'high-performance' }}
-        style={{ background: 'transparent' }}
+        dpr={isMobile ? 1 : [1, 1.5]}
+        gl={{
+          antialias: !isMobile,
+          alpha: true,
+          powerPreference: isMobile ? 'low-power' : 'high-performance',
+        }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0x000000, 0);
+        }}
+        style={{ background: 'transparent', width: '100%', height: '100%', display: 'block' }}
       >
         <Suspense fallback={null}>
-          <SceneContent variant={variant} />
+          <SceneContent variant={variant} showGrid={!isMobile} />
           {autoRotate && (
             <OrbitControls
               enableZoom={false}
