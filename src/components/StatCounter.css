@@ -1,0 +1,22 @@
+.stat-counter {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.stat-counter__value {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-counter__suffix {
+  font-size: 0.85em;
+}
+
+.stat-counter__label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
