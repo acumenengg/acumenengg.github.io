@@ -5,6 +5,7 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
 import Projects from './components/Projects';
+import ProjectGallery from './components/ProjectGallery';
 import Technologies from './components/Technologies';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
@@ -22,6 +23,7 @@ function AppContent() {
         <About />
         <Services />
         <Projects />
+        <ProjectGallery />
         <Technologies />
         <Contact />
       </main>
