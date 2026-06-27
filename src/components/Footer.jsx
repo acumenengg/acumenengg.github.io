@@ -1,4 +1,4 @@
-import { navLinks, contactInfo } from '../data/content';
+import { navLinks, contactInfo, companyDescription } from '../data/content';
 import BrandLogo from './BrandLogo';
 import './Footer.css';
 
@@ -11,10 +11,7 @@ export default function Footer() {
         <div className="footer__grid">
           <div className="footer__brand">
             <BrandLogo variant="stacked" className="footer__logo" />
-            <p className="footer__desc">
-              Civil engineering, structural design, BIM, and CAD drafting & detailing
-              services for projects worldwide.
-            </p>
+            <p className="footer__desc">{companyDescription}</p>
           </div>
 
           <div className="footer__links">

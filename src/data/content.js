@@ -1,6 +1,6 @@
 export const stats = [
   { value: 400, suffix: '+', label: 'Projects Completed' },
-  { value: 100, suffix: '+', label: 'Clients Worldwide' },
+  { value: 35, suffix: '+', label: 'Clients Worldwide' },
   { value: 8, suffix: '+', label: 'Years of Experience' },
   { value: 4, suffix: '+', label: 'Countries Served' },
 ];
@@ -246,8 +246,11 @@ export const socialLinks = [
 ];
 
 
+export const companyDescription =
+  'A globally trusted provider of Civil Engineering, Rebar, Precast, Structural Detailing, BIM, and CAD Drafting Services, delivering precision-driven solutions for projects worldwide.';
+
 export const contactInfo = {
-  address: 'Sai Park Phase 5, near Man Pasand Sweets, Manjari Budruk, Maharashtra 412307',
+  address: 'Sai Park Phase 5, near Man Pasand Sweets, Manjari Budruk, Pune, Maharashtra, India 412307',
   phone: '+91 97309 60433',
   emails: [
     'kp.acumenengineering@gmail.com',
