@@ -20,7 +20,13 @@ export default function Contact() {
                 <span className="contact__detail-icon">📍</span>
                 <div>
                   <h4>Address</h4>
-                  <p>{contactInfo.address}</p>
+                  <a
+                    href={contactInfo.mapLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {contactInfo.address}
+                  </a>
                 </div>
               </div>
               <div className="contact__detail glass-card">
@@ -72,6 +78,14 @@ export default function Contact() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
+              <a
+                className="contact__map-link"
+                href={contactInfo.mapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open in Google Maps
+              </a>
             </div>
           </div>
 

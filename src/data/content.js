@@ -256,8 +256,9 @@ export const contactInfo = {
   website: 'acumenengg.github.io',
   hours: 'Mon - Sat (9:00 AM - 6:00 PM)',
   whatsapp: '919730960433',
+  mapLink: 'https://maps.app.goo.gl/joy5TVya3Hoosc4NA',
   mapEmbed:
-    'https://www.google.com/maps?q=Sai+Park+Phase+5,+near+Man+Pasand+Sweets,+Manjari+Budruk,+Maharashtra+412307&output=embed',
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3788.0105!2d73.957837!3d18.5254231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c33d5d1fa8b5%3A0xc45418ef6fd21691!2sSai%20Park%20Phase%205!5e0!3m2!1sen!2sin!4v1740550000000!5m2!1sen!2sin',
   formEmbed:
     'https://docs.google.com/forms/d/e/1FAIpQLScw9YPx9qpag_fVhL1FKCn8BNTo56ruxqQumgKgLu5IE03b2g/viewform?embedded=true',
   formHeight: 1050,

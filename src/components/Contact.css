@@ -103,6 +103,18 @@
   min-height: 180px;
 }
 
+.contact__map-link {
+  display: inline-block;
+  margin-top: 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.contact__map-link:hover {
+  text-decoration: underline;
+}
+
 .contact__form-area {
   display: flex;
   flex-direction: column;
