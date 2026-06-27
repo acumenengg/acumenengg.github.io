@@ -8,7 +8,7 @@ export default function About() {
       <div className="container">
         <div className="section-header fade-up">
           <span className="section-tag">About Us</span>
-          <h2 className="section-title">Engineering Excellence Since 2010</h2>
+          <h2 className="section-title">Trusted Engineering Excellence</h2>
           <p className="section-subtitle">
             Acumen Engineering Services is your trusted engineering partner, delivering
             high-quality engineering services that help contractors, fabricators, and consulting

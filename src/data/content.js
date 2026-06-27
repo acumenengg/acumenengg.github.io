@@ -1,8 +1,8 @@
 export const stats = [
-  { value: 850, suffix: '+', label: 'Projects Completed' },
-  { value: 320, suffix: '+', label: 'Clients Worldwide' },
-  { value: 15, suffix: '+', label: 'Years of Experience' },
-  { value: 12, suffix: '', label: 'Countries Served' },
+  { value: 400, suffix: '+', label: 'Projects Completed' },
+  { value: 100, suffix: '+', label: 'Clients Worldwide' },
+  { value: 8, suffix: '+', label: 'Years of Experience' },
+  { value: 4, suffix: '+', label: 'Countries Served' },
 ];
 
 export const values = [

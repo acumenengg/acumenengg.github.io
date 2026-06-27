@@ -4,11 +4,24 @@ import { OrbitControls, Grid, Edges, Float, Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 const STEEL = { color: '#c8d0d8', metalness: 0.92, roughness: 0.18 };
-const REBAR = { color: '#FF8C00', metalness: 0.88, roughness: 0.22 };
+const REBAR = {
+  color: '#FF8C00',
+  emissive: '#FF6A00',
+  emissiveIntensity: 0.55,
+  metalness: 0.9,
+  roughness: 0.2,
+};
+const REBAR_TIE = {
+  color: '#FFB347',
+  emissive: '#FF8C00',
+  emissiveIntensity: 0.35,
+  metalness: 0.85,
+  roughness: 0.25,
+};
 const SLAB = { color: '#4DA6FF', transparent: true, opacity: 0.14, metalness: 0.6, roughness: 0.35 };
 const CONCRETE = { color: '#64748b', metalness: 0.45, roughness: 0.55 };
 
-function RebarRod({ from, to, radius = 0.022 }) {
+function RebarRod({ from, to, radius = 0.022, tie = false }) {
   const { position, rotation, length } = useMemo(() => {
     const start = new THREE.Vector3(...from);
     const end = new THREE.Vector3(...to);
@@ -30,12 +43,12 @@ function RebarRod({ from, to, radius = 0.022 }) {
   return (
     <mesh position={position} rotation={rotation}>
       <cylinderGeometry args={[radius, radius, length, 8]} />
-      <meshStandardMaterial {...REBAR} />
+      <meshStandardMaterial {...(tie ? REBAR_TIE : REBAR)} />
     </mesh>
   );
 }
 
-function ColumnRebarCage({ x, z, height, width = 0.35, depth = 0.35 }) {
+function ColumnRebarCage({ x, z, height, width = 0.35, depth = 0.35, detailed = true }) {
   const hw = width / 2;
   const hd = depth / 2;
   const corners = [
@@ -44,36 +57,79 @@ function ColumnRebarCage({ x, z, height, width = 0.35, depth = 0.35 }) {
     [x + hw, z + hd],
     [x - hw, z + hd],
   ];
-  const tieHeights = [0.15, 0.45, 0.75, 1.05].filter((h) => h < height - 0.1);
+  const spacing = detailed ? 0.22 : 0.32;
+  const tieHeights = [];
+  for (let y = 0.12; y < height - 0.08; y += spacing) {
+    tieHeights.push(y);
+  }
 
   return (
     <group>
       {corners.map(([cx, cz], i) => (
-        <RebarRod key={`v-${i}`} from={[cx, 0.05, cz]} to={[cx, height, cz]} />
+        <RebarRod key={`v-${i}`} from={[cx, 0.05, cz]} to={[cx, height, cz]} radius={detailed ? 0.028 : 0.024} />
       ))}
       {tieHeights.map((y, i) => (
         <group key={`tie-${i}`}>
-          <RebarRod from={[corners[0][0], y, corners[0][1]]} to={[corners[1][0], y, corners[1][1]]} radius={0.018} />
-          <RebarRod from={[corners[1][0], y, corners[1][1]]} to={[corners[2][0], y, corners[2][1]]} radius={0.018} />
-          <RebarRod from={[corners[2][0], y, corners[2][1]]} to={[corners[3][0], y, corners[3][1]]} radius={0.018} />
-          <RebarRod from={[corners[3][0], y, corners[3][1]]} to={[corners[0][0], y, corners[0][1]]} radius={0.018} />
+          <RebarRod tie from={[corners[0][0], y, corners[0][1]]} to={[corners[1][0], y, corners[1][1]]} radius={0.02} />
+          <RebarRod tie from={[corners[1][0], y, corners[1][1]]} to={[corners[2][0], y, corners[2][1]]} radius={0.02} />
+          <RebarRod tie from={[corners[2][0], y, corners[2][1]]} to={[corners[3][0], y, corners[3][1]]} radius={0.02} />
+          <RebarRod tie from={[corners[3][0], y, corners[3][1]]} to={[corners[0][0], y, corners[0][1]]} radius={0.02} />
+          {detailed && (
+            <>
+              <RebarRod tie from={[corners[0][0], y, corners[0][1]]} to={[corners[2][0], y, corners[2][1]]} radius={0.014} />
+              <RebarRod tie from={[corners[1][0], y, corners[1][1]]} to={[corners[3][0], y, corners[3][1]]} radius={0.014} />
+            </>
+          )}
         </group>
       ))}
     </group>
   );
 }
 
-function SteelMember({ position, size, rotation = [0, 0, 0] }) {
+function BeamStirrups({ y, width, depth, count = 5 }) {
+  const stirrups = useMemo(() => {
+    const items = [];
+    const hw = width / 2 - 0.06;
+    const hd = depth / 2 - 0.06;
+    for (let i = 0; i < count; i++) {
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const x = -hw + t * hw * 2;
+      items.push([
+        [x, y, -hd],
+        [x, y, hd],
+        [x, y + 0.12, hd],
+        [x, y + 0.12, -hd],
+        [x, y, -hd],
+      ]);
+    }
+    return items;
+  }, [y, width, depth, count]);
+
+  return (
+    <group>
+      {stirrups.map((points, i) => (
+        <Line key={i} points={points} color="#FF8C00" lineWidth={2.5} />
+      ))}
+    </group>
+  );
+}
+
+function SteelMember({ position, size, rotation = [0, 0, 0], ghost = false }) {
   return (
     <mesh position={position} rotation={rotation}>
       <boxGeometry args={size} />
-      <meshStandardMaterial {...STEEL} />
+      <meshStandardMaterial
+        {...STEEL}
+        transparent
+        opacity={ghost ? 0.12 : 0.35}
+      />
       <Edges color="#FF8C00" threshold={12} />
     </mesh>
   );
 }
 
-function SlabRebarMat({ y, width, depth, spacing = 0.22 }) {
+function SlabRebarMat({ y, width, depth, spacing = 0.22, prominent = false }) {
+  const barRadius = prominent ? 0.022 : 0.018;
   const bars = useMemo(() => {
     const items = [];
     const countX = Math.floor(width / spacing);
@@ -95,7 +151,7 @@ function SlabRebarMat({ y, width, depth, spacing = 0.22 }) {
   return (
     <group>
       {bars.map((bar, i) => (
-        <RebarRod key={i} {...bar} radius={0.016} />
+        <RebarRod key={i} {...bar} radius={barRadius} />
       ))}
     </group>
   );
@@ -147,75 +203,82 @@ function StructuralBIMModel({ detailed = true }) {
 
   return (
     <group ref={groupRef}>
-      {/* Foundation */}
+      {/* Foundation with dense rebar mat */}
       <mesh position={[0, -0.08, 0]}>
         <boxGeometry args={[2.6, 0.16, 2.0]} />
-        <meshStandardMaterial {...CONCRETE} transparent opacity={0.85} />
+        <meshStandardMaterial {...CONCRETE} transparent opacity={0.45} />
         <Edges color="#FF8C00" threshold={15} />
       </mesh>
-      <SlabRebarMat y={0.02} width={2.3} depth={1.75} spacing={0.2} />
+      <SlabRebarMat y={0.02} width={2.3} depth={1.75} spacing={detailed ? 0.14 : 0.2} prominent />
+      <SlabRebarMat y={0.06} width={2.1} depth={1.55} spacing={detailed ? 0.16 : 0.22} prominent />
 
-      {/* Steel columns */}
+      {/* Ghost steel columns — rebar cages are the focus */}
       {columns.map(([x, z], i) => (
         <SteelMember
           key={`col-${i}`}
           position={[x, totalHeight / 2, z]}
           size={[0.09, totalHeight, 0.09]}
+          ghost
         />
       ))}
 
-      {/* Rebar column cages at corners */}
-      {[
-        [-0.95, -0.75],
-        [0.95, -0.75],
-        [0.95, 0.75],
-        [-0.95, 0.75],
-      ].map(([x, z], i) => (
-        <ColumnRebarCage key={`cage-${i}`} x={x} z={z} height={totalHeight - 0.1} width={0.28} depth={0.28} />
+      {/* Rebar column cages at every column */}
+      {columns.map(([x, z], i) => (
+        <ColumnRebarCage
+          key={`cage-${i}`}
+          x={x}
+          z={z}
+          height={totalHeight - 0.1}
+          width={0.3}
+          depth={0.3}
+          detailed={detailed}
+        />
       ))}
 
-      {/* Floor slabs + steel beams + slab rebar */}
+      {/* Floor slabs + beam rebar + slab mats */}
       {floors.map((floor, i) => {
         const beamY = floor.y + 0.22;
         return (
           <group key={`floor-${i}`}>
-            {/* BIM transparent slab */}
             <mesh position={[0, floor.y, 0]}>
               <boxGeometry args={[floor.width, 0.06, floor.depth]} />
-              <meshStandardMaterial {...SLAB} />
+              <meshStandardMaterial {...SLAB} opacity={0.08} />
               <Edges color="#FF8C00" linewidth={1} threshold={10} />
             </mesh>
 
-            {/* Slab rebar reinforcement */}
-            <SlabRebarMat y={floor.y + 0.02} width={floor.width - 0.15} depth={floor.depth - 0.15} spacing={detailed ? 0.24 : 0.32} />
-
-            {/* Primary steel beams along width */}
-            <SteelMember position={[0, beamY, -floor.depth / 2 + 0.08]} size={[floor.width, 0.07, 0.07]} />
-            <SteelMember position={[0, beamY, floor.depth / 2 - 0.08]} size={[floor.width, 0.07, 0.07]} />
-            <SteelMember position={[0, beamY, 0]} size={[floor.width, 0.06, 0.06]} />
-
-            {/* Cross beams along depth */}
-            <SteelMember
-              position={[-floor.width / 2 + 0.08, beamY, 0]}
-              size={[0.07, 0.07, floor.depth]}
+            <SlabRebarMat
+              y={floor.y + 0.02}
+              width={floor.width - 0.12}
+              depth={floor.depth - 0.12}
+              spacing={detailed ? 0.16 : 0.24}
+              prominent
             />
-            <SteelMember
-              position={[floor.width / 2 - 0.08, beamY, 0]}
-              size={[0.07, 0.07, floor.depth]}
+            <SlabRebarMat
+              y={floor.y + 0.05}
+              width={floor.width - 0.2}
+              depth={floor.depth - 0.2}
+              spacing={detailed ? 0.18 : 0.26}
+              prominent
             />
 
-            {/* Diagonal bracing on lower floors */}
-            {i < 2 && detailed && (
+            <SteelMember ghost position={[0, beamY, -floor.depth / 2 + 0.08]} size={[floor.width, 0.07, 0.07]} />
+            <SteelMember ghost position={[0, beamY, floor.depth / 2 - 0.08]} size={[floor.width, 0.07, 0.07]} />
+            <SteelMember ghost position={[0, beamY, 0]} size={[floor.width, 0.06, 0.06]} />
+            <SteelMember ghost position={[-floor.width / 2 + 0.08, beamY, 0]} size={[0.07, 0.07, floor.depth]} />
+            <SteelMember ghost position={[floor.width / 2 - 0.08, beamY, 0]} size={[0.07, 0.07, floor.depth]} />
+
+            {detailed && (
               <>
+                <BeamStirrups y={beamY - 0.04} width={floor.width} depth={floor.depth} count={6} />
                 <Line
                   points={[
                     [-floor.width / 2 + 0.1, beamY, -floor.depth / 2 + 0.1],
                     [floor.width / 2 - 0.1, beamY, floor.depth / 2 - 0.1],
                   ]}
                   color="#FF8C00"
-                  lineWidth={1.5}
+                  lineWidth={2}
                   transparent
-                  opacity={0.7}
+                  opacity={0.85}
                 />
                 <Line
                   points={[
@@ -223,9 +286,9 @@ function StructuralBIMModel({ detailed = true }) {
                     [-floor.width / 2 + 0.1, beamY, floor.depth / 2 - 0.1],
                   ]}
                   color="#FF8C00"
-                  lineWidth={1.5}
+                  lineWidth={2}
                   transparent
-                  opacity={0.7}
+                  opacity={0.85}
                 />
               </>
             )}
@@ -233,21 +296,9 @@ function StructuralBIMModel({ detailed = true }) {
         );
       })}
 
-      {/* Roof steel truss hint */}
-      <SteelMember
-        position={[0, totalHeight + 0.15, 0]}
-        size={[2.0, 0.06, 0.06]}
-      />
-      <SteelMember
-        position={[-0.7, totalHeight + 0.35, 0]}
-        size={[0.06, 0.06, 1.2]}
-        rotation={[0, 0, 0.55]}
-      />
-      <SteelMember
-        position={[0.7, totalHeight + 0.35, 0]}
-        size={[0.06, 0.06, 1.2]}
-        rotation={[0, 0, -0.55]}
-      />
+      {/* Roof rebar hint */}
+      <SlabRebarMat y={totalHeight + 0.08} width={1.8} depth={1.4} spacing={detailed ? 0.18 : 0.24} prominent />
+      <SteelMember ghost position={[0, totalHeight + 0.15, 0]} size={[2.0, 0.06, 0.06]} />
     </group>
   );
 }
@@ -305,8 +356,8 @@ function SceneContent({ variant = 'building', showGrid = true, detailed = true }
       <ambientLight intensity={0.55} />
       <directionalLight position={[6, 10, 5]} intensity={1.4} color="#ffffff" />
       <directionalLight position={[-4, 5, -3]} intensity={0.5} color="#4DA6FF" />
-      <pointLight position={[2, 4, 3]} intensity={0.7} color="#FF8C00" />
-      <pointLight position={[-2, 2, -2]} intensity={0.35} color="#FF8C00" />
+      <pointLight position={[2, 4, 3]} intensity={1.1} color="#FF8C00" />
+      <pointLight position={[-2, 2, -2]} intensity={0.55} color="#FF8C00" />
 
       {variant === 'building' && (
         <Float speed={1.1} rotationIntensity={0.1} floatIntensity={0.25}>
