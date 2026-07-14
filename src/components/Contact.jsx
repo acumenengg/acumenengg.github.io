@@ -1,4 +1,5 @@
 import { contactInfo, siteUrl } from '../data/content';
+import ContactForm from './ContactForm';
 import './Contact.css';
 
 export default function Contact() {
@@ -91,20 +92,7 @@ export default function Contact() {
 
           <div className="contact__form-area slide-right">
             <div className="contact__form glass-card">
-              <div className="contact__form-embed">
-                <iframe
-                  title="Acumen Engineering Contact Form"
-                  src={contactInfo.formEmbed}
-                  width="640"
-                  height={contactInfo.formHeight}
-                  frameBorder="0"
-                  marginHeight="0"
-                  marginWidth="0"
-                  loading="lazy"
-                >
-                  Loading…
-                </iframe>
-              </div>
+              <ContactForm />
             </div>
           </div>
         </div>

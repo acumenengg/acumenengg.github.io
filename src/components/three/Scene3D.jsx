@@ -1,6 +1,15 @@
 import { Suspense, useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Grid, Edges, Float, Line } from '@react-three/drei';
+import {
+  OrbitControls,
+  Grid,
+  Edges,
+  Float,
+  Line,
+  RoundedBox,
+  ContactShadows,
+  Environment,
+} from '@react-three/drei';
 import * as THREE from 'three';
 
 const STEEL = { color: '#c8d0d8', metalness: 0.92, roughness: 0.18 };
@@ -20,6 +29,17 @@ const REBAR_TIE = {
 };
 const SLAB = { color: '#4DA6FF', transparent: true, opacity: 0.14, metalness: 0.6, roughness: 0.35 };
 const CONCRETE = { color: '#64748b', metalness: 0.45, roughness: 0.55 };
+const STEEL_SOLID = { color: '#8b9aab', metalness: 0.94, roughness: 0.22 };
+const CONCRETE_SOLID = { color: '#6b7280', metalness: 0.08, roughness: 0.82 };
+const GLASS = {
+  color: '#7ec8ff',
+  metalness: 0.15,
+  roughness: 0.05,
+  transparent: true,
+  opacity: 0.35,
+  envMapIntensity: 1.2,
+};
+const REBAR_LINE = '#FF8C00';
 
 function RebarRod({ from, to, radius = 0.022, tie = false }) {
   const { position, rotation, length } = useMemo(() => {
@@ -153,6 +173,296 @@ function SlabRebarMat({ y, width, depth, spacing = 0.22, prominent = false }) {
       {bars.map((bar, i) => (
         <RebarRod key={i} {...bar} radius={barRadius} />
       ))}
+    </group>
+  );
+}
+
+/** I-beam profile extruded along local X axis */
+function IBeam({ length, material = STEEL_SOLID, castShadow = false }) {
+  const fw = 0.1;
+  const ft = 0.02;
+  const ww = 0.016;
+  const wh = 0.085;
+  const halfH = wh / 2 - ft / 2;
+
+  return (
+    <group>
+      <mesh position={[0, halfH, 0]} castShadow={castShadow}>
+        <boxGeometry args={[length, ft, fw]} />
+        <meshStandardMaterial {...material} />
+      </mesh>
+      <mesh castShadow={castShadow}>
+        <boxGeometry args={[length, wh - ft * 2, ww]} />
+        <meshStandardMaterial {...material} />
+      </mesh>
+      <mesh position={[0, -halfH, 0]} castShadow={castShadow}>
+        <boxGeometry args={[length, ft, fw]} />
+        <meshStandardMaterial {...material} />
+      </mesh>
+    </group>
+  );
+}
+
+function SteelColumn({ x, z, height, castShadow = false }) {
+  return (
+    <group position={[x, height / 2, z]} rotation={[0, 0, Math.PI / 2]}>
+      <IBeam length={height} castShadow={castShadow} />
+    </group>
+  );
+}
+
+function SteelBeam({ from, to, castShadow = false }) {
+  const start = new THREE.Vector3(...from);
+  const end = new THREE.Vector3(...to);
+  const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+  const dir = new THREE.Vector3().subVectors(end, start);
+  const length = dir.length();
+  const quat = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(1, 0, 0),
+    dir.clone().normalize()
+  );
+  const euler = new THREE.Euler().setFromQuaternion(quat);
+
+  return (
+    <group position={[mid.x, mid.y, mid.z]} rotation={[euler.x, euler.y, euler.z]}>
+      <IBeam length={length} castShadow={castShadow} />
+    </group>
+  );
+}
+
+function ConcreteSlab({ y, width, depth, thickness = 0.07, castShadow = false }) {
+  return (
+    <RoundedBox
+      args={[width, thickness, depth]}
+      position={[0, y, 0]}
+      radius={0.012}
+      smoothness={3}
+      castShadow={castShadow}
+      receiveShadow={castShadow}
+    >
+      <meshStandardMaterial {...CONCRETE_SOLID} transparent opacity={0.88} />
+    </RoundedBox>
+  );
+}
+
+function GlassPanel({ position, size, castShadow = false }) {
+  return (
+    <mesh position={position} castShadow={castShadow}>
+      <boxGeometry args={size} />
+      <meshStandardMaterial {...GLASS} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+function SlabRebarOverlay({ y, width, depth, spacing = 0.2 }) {
+  const lines = useMemo(() => {
+    const items = [];
+    const countX = Math.floor(width / spacing);
+    const countZ = Math.floor(depth / spacing);
+    for (let i = 0; i <= countX; i++) {
+      const x = -width / 2 + (i / countX) * width;
+      items.push([
+        [x, y, -depth / 2 + 0.04],
+        [x, y, depth / 2 - 0.04],
+      ]);
+    }
+    for (let i = 0; i <= countZ; i++) {
+      const z = -depth / 2 + (i / countZ) * depth;
+      items.push([
+        [-width / 2 + 0.04, y, z],
+        [width / 2 - 0.04, y, z],
+      ]);
+    }
+    return items;
+  }, [y, width, depth, spacing]);
+
+  return (
+    <group>
+      {lines.map((points, i) => (
+        <Line key={i} points={points} color={REBAR_LINE} lineWidth={1.5} transparent opacity={0.85} />
+      ))}
+    </group>
+  );
+}
+
+/** Solid steel frame + concrete slabs + glass facade — realistic commercial structure */
+function RealisticStructuralModel({ detailed = true, castShadow = false }) {
+  const footprint = { w: 2.35, d: 1.75 };
+  const floorCount = detailed ? 5 : 4;
+  const floorHeight = 0.58;
+  const slabT = 0.065;
+
+  const floors = useMemo(
+    () =>
+      Array.from({ length: floorCount }, (_, i) => ({
+        y: i * floorHeight + 0.12,
+        width: footprint.w - i * 0.04,
+        depth: footprint.d - i * 0.03,
+      })),
+    [floorCount, floorHeight, footprint.d, footprint.w]
+  );
+
+  const columns = useMemo(
+    () =>
+      detailed
+        ? [
+            [-footprint.w / 2 + 0.08, -footprint.d / 2 + 0.08],
+            [footprint.w / 2 - 0.08, -footprint.d / 2 + 0.08],
+            [footprint.w / 2 - 0.08, footprint.d / 2 - 0.08],
+            [-footprint.w / 2 + 0.08, footprint.d / 2 - 0.08],
+            [0, -footprint.d / 2 + 0.08],
+            [0, footprint.d / 2 - 0.08],
+            [-footprint.w / 2 + 0.08, 0],
+            [footprint.w / 2 - 0.08, 0],
+          ]
+        : [
+            [-footprint.w / 2 + 0.08, -footprint.d / 2 + 0.08],
+            [footprint.w / 2 - 0.08, -footprint.d / 2 + 0.08],
+            [footprint.w / 2 - 0.08, footprint.d / 2 - 0.08],
+            [-footprint.w / 2 + 0.08, footprint.d / 2 - 0.08],
+          ],
+    [detailed, footprint.d, footprint.w]
+  );
+
+  const totalHeight = floors[floors.length - 1].y + floorHeight;
+  const hw = footprint.w / 2 - 0.08;
+  const hd = footprint.d / 2 - 0.08;
+
+  return (
+    <group>
+      {/* Foundation */}
+      <RoundedBox
+        args={[footprint.w + 0.2, 0.14, footprint.d + 0.16]}
+        position={[0, -0.07, 0]}
+        radius={0.02}
+        smoothness={2}
+        receiveShadow={castShadow}
+        castShadow={castShadow}
+      >
+        <meshStandardMaterial {...CONCRETE_SOLID} />
+      </RoundedBox>
+
+      {detailed && (
+        <SlabRebarOverlay y={0.02} width={footprint.w + 0.05} depth={footprint.d + 0.05} spacing={0.16} />
+      )}
+
+      {/* Steel columns */}
+      {columns.map(([x, z], i) => (
+        <SteelColumn key={`col-${i}`} x={x} z={z} height={totalHeight} castShadow={castShadow} />
+      ))}
+
+      {/* Floors: slabs, beams, rebar overlay, bracing */}
+      {floors.map((floor, i) => {
+        const beamY = floor.y + slabT / 2 + 0.04;
+        const slabY = floor.y + slabT / 2;
+        const w = floor.width;
+        const d = floor.depth;
+        const halfW = w / 2 - 0.08;
+        const halfD = d / 2 - 0.08;
+
+        return (
+          <group key={`floor-${i}`}>
+            <ConcreteSlab y={slabY} width={w} depth={d} thickness={slabT} castShadow={castShadow} />
+
+            {/* Perimeter beams */}
+            <SteelBeam from={[-halfW, beamY, -halfD]} to={[halfW, beamY, -halfD]} castShadow={castShadow} />
+            <SteelBeam from={[halfW, beamY, -halfD]} to={[halfW, beamY, halfD]} castShadow={castShadow} />
+            <SteelBeam from={[halfW, beamY, halfD]} to={[-halfW, beamY, halfD]} castShadow={castShadow} />
+            <SteelBeam from={[-halfW, beamY, halfD]} to={[-halfW, beamY, -halfD]} castShadow={castShadow} />
+
+            {/* Interior beam grid */}
+            {detailed && (
+              <>
+                <SteelBeam from={[0, beamY, -halfD]} to={[0, beamY, halfD]} castShadow={castShadow} />
+                <SteelBeam from={[-halfW, beamY, 0]} to={[halfW, beamY, 0]} castShadow={castShadow} />
+              </>
+            )}
+
+            {detailed && <SlabRebarOverlay y={floor.y + 0.01} width={w - 0.12} depth={d - 0.12} spacing={0.18} />}
+
+            {/* X-bracing on mid floors */}
+            {detailed && i === 1 && (
+              <>
+                <Line
+                  points={[[-halfW, beamY + 0.35, -halfD], [halfW, beamY + 0.35, halfD]]}
+                  color={REBAR_LINE}
+                  lineWidth={2}
+                />
+                <Line
+                  points={[[halfW, beamY + 0.35, -halfD], [-halfW, beamY + 0.35, halfD]]}
+                  color={REBAR_LINE}
+                  lineWidth={2}
+                />
+              </>
+            )}
+          </group>
+        );
+      })}
+
+      {/* Roof parapet */}
+      <RoundedBox
+        args={[footprint.w - 0.15, 0.08, footprint.d - 0.12]}
+        position={[0, totalHeight + 0.04, 0]}
+        radius={0.01}
+        smoothness={2}
+        castShadow={castShadow}
+      >
+        <meshStandardMaterial {...CONCRETE_SOLID} />
+      </RoundedBox>
+
+      {/* Glass curtain wall — front facade */}
+      {detailed && (
+        <group position={[0, totalHeight / 2, -hd - 0.018]}>
+          {[-0.55, -0.18, 0.18, 0.55].map((x, i) => (
+            <GlassPanel
+              key={`glass-${i}`}
+              position={[x, 0, 0]}
+              size={[0.36, totalHeight - 0.35, 0.012]}
+              castShadow={castShadow}
+            />
+          ))}
+        </group>
+      )}
+
+      {/* Side glazing */}
+      {detailed && (
+        <group position={[hw + 0.018, totalHeight / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
+          {[-0.4, 0, 0.4].map((z, i) => (
+            <GlassPanel
+              key={`side-glass-${i}`}
+              position={[z, 0, 0]}
+              size={[0.32, totalHeight - 0.4, 0.012]}
+              castShadow={castShadow}
+            />
+          ))}
+        </group>
+      )}
+
+      {/* Concrete core (stair/elevator shaft) */}
+      {detailed && (
+        <RoundedBox
+          args={[0.38, totalHeight - 0.2, 0.38]}
+          position={[hw * 0.35, totalHeight / 2, hd * 0.2]}
+          radius={0.015}
+          smoothness={2}
+          castShadow={castShadow}
+        >
+          <meshStandardMaterial {...CONCRETE_SOLID} color="#52525b" roughness={0.9} />
+        </RoundedBox>
+      )}
+
+      {/* Orange BIM edge highlights on footprint */}
+      <Line
+        points={[
+          [-hw, 0.01, -hd],
+          [hw, 0.01, -hd],
+          [hw, 0.01, hd],
+          [-hw, 0.01, hd],
+          [-hw, 0.01, -hd],
+        ]}
+        color={REBAR_LINE}
+        lineWidth={2.5}
+      />
     </group>
   );
 }
@@ -311,21 +621,19 @@ function Building({ position = [0, 0, 0], scale = 1 }) {
   );
 }
 
-function SteelFrame({ position = [0, 0, 0] }) {
+function SteelFrame({ position = [0, 0, 0], detailed = true, castShadow = false }) {
   const ref = useRef();
 
   useFrame((state) => {
     if (ref.current) {
-      ref.current.rotation.y = state.clock.elapsedTime * 0.2;
+      ref.current.rotation.y = state.clock.elapsedTime * 0.12;
     }
   });
 
   return (
-    <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.3}>
-      <group ref={ref} position={position} scale={0.85}>
-        <StructuralBIMModel />
-      </group>
-    </Float>
+    <group ref={ref} position={position} scale={0.9}>
+      <RealisticStructuralModel detailed={detailed} castShadow={castShadow} />
+    </group>
   );
 }
 
@@ -351,13 +659,31 @@ function RebarGrid({ position = [0, 0, 0] }) {
 }
 
 function SceneContent({ variant = 'building', showGrid = true, detailed = true }) {
+  const cinematic = variant === 'steel';
+  const shadows = cinematic && detailed;
+
   return (
     <>
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[6, 10, 5]} intensity={1.4} color="#ffffff" />
-      <directionalLight position={[-4, 5, -3]} intensity={0.5} color="#4DA6FF" />
-      <pointLight position={[2, 4, 3]} intensity={1.1} color="#FF8C00" />
-      <pointLight position={[-2, 2, -2]} intensity={0.55} color="#FF8C00" />
+      <ambientLight intensity={cinematic ? 0.35 : 0.55} />
+      <hemisphereLight intensity={cinematic ? 0.45 : 0} groundColor="#1a2332" color="#c8d8f0" />
+      <directionalLight
+        position={[5, 9, 4]}
+        intensity={cinematic ? 1.65 : 1.4}
+        color="#fff8f0"
+        castShadow={shadows}
+        shadow-mapSize={[1024, 1024]}
+        shadow-camera-far={20}
+        shadow-camera-left={-4}
+        shadow-camera-right={4}
+        shadow-camera-top={4}
+        shadow-camera-bottom={-4}
+        shadow-bias={-0.0002}
+      />
+      <directionalLight position={[-4, 5, -3]} intensity={cinematic ? 0.35 : 0.5} color="#4DA6FF" />
+      <pointLight position={[2, 3, 3]} intensity={cinematic ? 0.7 : 1.1} color="#FF8C00" />
+      <pointLight position={[-2, 2, -2]} intensity={cinematic ? 0.35 : 0.55} color="#FF8C00" />
+
+      {cinematic && detailed && <Environment preset="city" environmentIntensity={0.55} />}
 
       {variant === 'building' && (
         <Float speed={1.1} rotationIntensity={0.1} floatIntensity={0.25}>
@@ -366,16 +692,30 @@ function SceneContent({ variant = 'building', showGrid = true, detailed = true }
           </group>
         </Float>
       )}
-      {variant === 'steel' && <SteelFrame />}
+      {variant === 'steel' && (
+        <>
+          <SteelFrame detailed={detailed} castShadow={shadows} />
+          {shadows && (
+            <ContactShadows
+              position={[0, -0.14, 0]}
+              opacity={0.45}
+              scale={8}
+              blur={2.2}
+              far={4}
+              color="#0f172a"
+            />
+          )}
+        </>
+      )}
       {variant === 'rebar' && <RebarGrid />}
       {variant === 'office' && (
         <>
           <Building scale={0.75} position={[-0.8, 0, 0]} />
-          <SteelFrame position={[1.4, 0, 0]} />
+          <SteelFrame position={[1.4, 0, 0]} detailed={detailed} castShadow={shadows} />
         </>
       )}
 
-      {showGrid && (
+      {showGrid && !cinematic && (
         <Grid
           position={[0, -0.2, 0]}
           args={[12, 12]}
@@ -412,12 +752,17 @@ function useIsMobile(breakpoint = 768) {
 
 export default function Scene3D({ variant = 'building', className = '', autoRotate = true }) {
   const isMobile = useIsMobile();
+  const cinematic = variant === 'steel';
 
   return (
     <div className={`scene-3d ${className}`}>
       <Canvas
-        camera={{ position: [3.8, 2.8, 4.8], fov: isMobile ? 48 : 42 }}
+        camera={{
+          position: cinematic ? [4.2, 2.65, 5.2] : [3.8, 2.8, 4.8],
+          fov: isMobile ? 48 : cinematic ? 40 : 42,
+        }}
         dpr={isMobile ? 1 : [1, 1.5]}
+        shadows={cinematic && !isMobile}
         gl={{
           antialias: !isMobile,
           alpha: true,
@@ -435,7 +780,7 @@ export default function Scene3D({ variant = 'building', className = '', autoRota
               enableZoom={false}
               enablePan={false}
               autoRotate
-              autoRotateSpeed={0.65}
+              autoRotateSpeed={cinematic ? 0.45 : 0.65}
               maxPolarAngle={Math.PI / 2.1}
               minPolarAngle={Math.PI / 5}
             />
@@ -446,4 +791,4 @@ export default function Scene3D({ variant = 'building', className = '', autoRota
   );
 }
 
-export { Building, SteelFrame, RebarGrid, StructuralBIMModel };
+export { Building, SteelFrame, RebarGrid, StructuralBIMModel, RealisticStructuralModel };
