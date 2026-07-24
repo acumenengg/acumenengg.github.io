@@ -36,7 +36,7 @@ export const values = [
 export const serviceCategories = [
   {
     id: 'steel',
-    title: 'Rebar Detailing Services',
+    title: 'Rebar Detailing',
     subtitle: 'Precision Reinforcement | Optimized Construction',
     icon: '⬡',
     color: '#FF8C00',
@@ -96,73 +96,55 @@ export const serviceCategories = [
     ],
   },
   {
-    id: 'structural-steel',
-    title: 'Structural Steel Detailing',
-    subtitle: 'Accurate Fabrication | Efficient Erection',
-    icon: '⬢',
-    color: '#94A3B8',
+    id: 'rebar-optimization',
+    title: 'Rebar Optimization, Offcut Utilization & Rebar Wastage Control Techniques',
+    shortTitle: 'Rebar Optimization & Wastage Control',
+    subtitle: 'Smart Material Use | Waste Reduction | Cost Efficiency',
+    icon: '↻',
+    color: '#FF8C00',
     overview:
-      'Delivering precision-engineered Structural Steel Detailing solutions that improve fabrication accuracy, streamline erection, and minimize project risks. Our comprehensive shop drawings, connection details, and 3D models ensure seamless coordination between design, fabrication, and construction for efficient project delivery.',
+      'Delivering data-driven Rebar Optimization, Offcut Utilization & Rebar Wastage Control Techniques that reduce material scrap, maximize existing inventory, and improve project profitability. We analyze offcut reports, recommend optimal bar utilization for upcoming work, and ensure every recommendation maintains structural integrity and design compliance.',
+    servicesHeading: 'Key Benefits:',
     services: [
       {
-        name: 'Structural Steel Shop Drawings',
+        name: 'Offcut Analysis',
         description:
-          'Fabrication-ready drawings containing complete member dimensions, welds, bolts, and assembly information.',
+          'Review steel yard offcut reports to identify reusable materials.',
       },
       {
-        name: 'General Arrangement (GA) Drawings',
+        name: 'Material Optimization',
         description:
-          'Comprehensive layout drawings showing structural framing, member locations, levels, and identification marks.',
+          'Recommend the best utilization of available offcuts for upcoming projects.',
       },
       {
-        name: 'Fabrication Drawings',
+        name: 'Waste Reduction',
         description:
-          'Detailed manufacturing drawings that enable precise fabrication while minimizing production errors.',
+          'Minimize steel scrap and unnecessary material disposal.',
       },
       {
-        name: 'Erection Drawings',
+        name: 'Cost Savings',
         description:
-          'Installation drawings providing erection sequences, member positioning, and field connection details.',
+          'Reduce material procurement costs by maximizing existing inventory.',
       },
       {
-        name: 'Steel Connection Detailing',
+        name: 'Improved Efficiency',
         description:
-          'Accurate detailing of bolted and welded connections designed for safe fabrication and efficient site assembly.',
+          'Enhance fabrication and project planning through optimized material usage.',
       },
       {
-        name: 'Anchor Bolt & Base Plate Detailing',
+        name: 'Structural Compliance',
         description:
-          'Precise layouts for anchor bolts, base plates, templates, and foundation interfaces.',
+          'Ensure all recommendations maintain structural integrity and meet design requirements.',
       },
       {
-        name: 'Miscellaneous Steel Detailing',
+        name: 'Sustainability',
         description:
-          'Detailed drawings for stairs, handrails, ladders, platforms, canopies, and architectural steel components.',
+          'Promote efficient resource utilization and environmentally responsible construction practices.',
       },
       {
-        name: 'Material Take-Off (MTO) & Bill of Materials (BOM)',
+        name: 'Increased Profitability',
         description:
-          'Accurate material quantities supporting procurement, fabrication planning, and cost estimation.',
-      },
-      {
-        name: 'CNC Data Generation (DSTV/NC Files)',
-        description:
-          'Machine-ready fabrication files enabling automated cutting, drilling, and manufacturing.',
-      },
-      {
-        name: '3D Steel Modeling (Tekla Structures)',
-        description:
-          'Highly detailed BIM models that improve coordination, visualization, and construction efficiency.',
-      },
-      {
-        name: 'BIM Coordination & Clash Detection',
-        description:
-          'Multi-disciplinary coordination that identifies and resolves design conflicts before fabrication.',
-      },
-      {
-        name: 'As-Built Drawings',
-        description:
-          'Final construction drawings documenting completed steel installations for maintenance and future modifications.',
+          'Lower material wastage and improve overall project margins.',
       },
     ],
   },
@@ -334,6 +316,102 @@ export const serviceCategories = [
       },
     ],
   },
+  {
+    id: 'key-achievements',
+    title: 'Key Achievements',
+    shortTitle: 'Key Achievements',
+    subtitle: 'Measurable Results | Proven Expertise',
+    icon: '★',
+    color: '#50C878',
+    overview:
+      'Our expertise in rebar detailing has consistently delivered measurable cost savings and material optimization for large-scale construction projects.',
+    servicesHeading: 'Highlights:',
+    services: [
+      {
+        name: '10,000+ MT Successfully Detailed',
+        description:
+          'Delivered rebar detailing for projects exceeding 10,000 metric tons.',
+      },
+      {
+        name: 'Industry-Leading Waste Optimization',
+        description:
+          'Achieved rebar/steel wastage as low as 0.5%, significantly below typical industry levels.',
+      },
+      {
+        name: 'Proven Cost Savings',
+        description:
+          'Helped clients save over ₹16 million through optimized rebar detailing and material utilization.',
+      },
+      {
+        name: 'Enhanced Material Efficiency',
+        description:
+          'Improved steel usage while minimizing offcuts and unnecessary waste.',
+      },
+      {
+        name: 'Accurate & Reliable Detailing',
+        description:
+          'Ensured precise reinforcement detailing for smooth fabrication and construction.',
+      },
+      {
+        name: 'Value-Driven Solutions',
+        description:
+          'Combined engineering expertise with optimization strategies to maximize project profitability.',
+      },
+    ],
+  },
+  {
+    id: 'reconciliation-reports',
+    title: 'Reconciliation Reports',
+    shortTitle: 'Reconciliation Reports',
+    subtitle: 'Accurate Tracking | Clear Accountability',
+    icon: '▤',
+    color: '#4DA6FF',
+    overview:
+      'We provide detailed rebar/steel reconciliation reports that help track material usage, identify variances, and ensure accurate project monitoring from procurement to installation.',
+    servicesHeading: 'Key Benefits:',
+    services: [
+      {
+        name: 'Material Tracking',
+        description:
+          'Monitor steel quantities from procurement to final consumption.',
+      },
+      {
+        name: 'Usage Analysis',
+        description:
+          'Compare planned quantities with actual material usage.',
+      },
+      {
+        name: 'Variance Identification',
+        description:
+          'Detect shortages, excesses, and material discrepancies.',
+      },
+      {
+        name: 'Inventory Control',
+        description:
+          'Maintain accurate records of available, consumed, and remaining steel.',
+      },
+      {
+        name: 'Waste Monitoring',
+        description:
+          'Analyze wastage and identify opportunities for improvement.',
+      },
+      {
+        name: 'Cost Control',
+        description:
+          'Support better budgeting by minimizing material losses and unexpected costs.',
+      },
+      {
+        name: 'Accurate Reporting',
+        description:
+          'Generate clear, detailed reports for project management and client review.',
+      },
+      {
+        name: 'Improved Decision-Making',
+        description:
+          'Provide reliable data for efficient planning, procurement, and project execution.',
+      },
+    ],
+  },
 ];
 
 export const projectExperience = [
@@ -421,7 +499,7 @@ export const socialLinks = [
 export const siteUrl = 'https://acumenengg.github.io/';
 
 export const companyDescription =
-  'A globally trusted provider of Civil Engineering, Rebar, Precast, Structural Detailing, BIM, and CAD Drafting Services, delivering precision-driven solutions for projects worldwide.';
+  'A globally trusted provider of Civil Engineering, Rebar Detailing & Bar Bending Schedules (BBS), Rebar Optimization, Offcut Utilization, Rebar Wastage Control Techniques, Rebar/Steel Reconciliation Reports, Quantity Estimation, Structural Steel Detailing, Precast Detailing, BIM Solutions, CAD Drawing - Drafting & Detailing Services, delivering precision-driven solutions for projects worldwide.';
 
 export const contactForm = {
   actionUrl:
