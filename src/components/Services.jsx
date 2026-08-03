@@ -44,7 +44,7 @@ export default function Services() {
             >
               <span className="services__tab-icon">{cat.icon}</span>
               <span className="services__tab-label">{cat.title}</span>
-              <span className="services__tab-short">{cat.title.split(/[/—]/)[0].trim()}</span>
+              <span className="services__tab-short">{cat.shortTitle || cat.title.split(/[/—]/)[0].trim()}</span>
             </button>
           ))}
         </div>
