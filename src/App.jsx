@@ -11,12 +11,14 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import BackToTop from './components/BackToTop';
+import OpeningCrackers from './components/OpeningCrackers';
 
 function AppContent() {
   useScrollAnimations();
 
   return (
     <>
+      <OpeningCrackers />
       <Navbar />
       <main>
         <Hero />

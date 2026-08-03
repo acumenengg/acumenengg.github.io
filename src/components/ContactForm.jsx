@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { contactForm } from '../data/content';
 import { submitGoogleForm } from '../lib/submitGoogleForm';
+import { playFormSuccessCrackers } from '../lib/crackerBurst';
 
 const INITIAL = {
   fullName: '',
@@ -56,6 +57,7 @@ export default function ContactForm() {
 
       setForm(INITIAL);
       setStatus('success');
+      playFormSuccessCrackers();
     } catch {
       setStatus('error');
       setError('Something went wrong. Please try again or contact us directly.');
